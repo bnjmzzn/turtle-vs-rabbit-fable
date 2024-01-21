@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"><!---
+    <script src="https://cdn.jsdelivr.net/npm/p5@1/lib/p5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1/lib/addons/p5.sound.js"></script>
+    -->
+
+    <script src="src/js/scenemanager.js">
+    </script>
+    <script src="src/js/p5.min.js">
+    </script>
+    <script src="src/js/p5.sound.min.js">
+    </script>
+    <script src="src/js/planck.min.js">
+    </script>
+    <script src="src/js/p5play.js">
+    </script>
+    <script src="src/js/game.js">
+    </script>
+    <style>
+        html {
+        width: 100%;
+        height: 100%;
+        }
+
+        body {
+        background-color: #000000;
+        margin: 0;
+        height: 100%;
+        }
+
+        main {
+        height: 100%;
+        margin: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        }
+
+        canvas {
+        display: block;
+        margin: auto;
+        width: 100%;
+        height: 100%;
+        }
+    </style>
+
+    <title>
+    </title>
+</head>
+
+<body>
+    <script>
+        console.log('hi')
+    </script> 
+    <script>
+        function Menu() {
+
+        this.enter = function() {
+        textAlign(TOP, LEFT)
+        allSprites.removeAll()
+        scene_flow = 0;
+        chat_flow = 0;
+        collected = 0;
+        current_text = '';
+        current_index = 0;
+        can_jump = true;
+        tutorial1 = true;
+        timer = 0;
+        trans_box_alpha = 250;
+        if (menu_bgm.isPlaying()) {
+        } else {
+            menu_bgm.play()
+        }
+        title_box = new Sprite(width*0.5, height*0.2, 's');
+        title_box.img = title_img;
+        title_box.scale = zscale*0.5;
+
+        play_btn = new Sprite(width*0.5, height*0.6, 's');
+        play_btn.img = play_img;
+        play_btn.scale = zscale*0.5;
+
+        credits_btn = new Sprite(width*0.5, height*0.8, 's');
+        credits_btn.img = credits_img;
+        credits_btn.scale = zscale*0.5;
+
+        trans_box = new Sprite(width*1.5, height*0.5, width, height, 'k')
+        trans_box.color = 'black'
+
+        sun = new Sprite(width*0.85,height*0.2, 'n');
+        sun.img = sun_img;
+        sun.diameter = sun.img.height/2;
+        sun.scale = zscale*0.7;
+        sun.rotationSpeed = 0.5
+        };
+
+        this.setup = function() {
+        };
+
+        this.draw = function() {
+        background('#87CEEB')
+        sun.draw()
+        image(bg_img, 0, 0, width, height)
+        title_box.draw()
+        play_btn.draw()
+        credits_btn.draw()
+        this.title_shake()
+
+        if (play_btn.mouse.hovering && play_btn.mouse.presses()) {
+            sfx_click.play()
+            trans_box.moveTo(width*0.5, height*0.5, 60);
+            setTimeout(() => {
+                allSprites.removeAll();
+                menu_bgm.stop()
+                sm.showScene(scene1);
+            }, 1000)
+        } else if (play_btn.mouse.hovering()) {
+            play_btn.scale = zscale*0.7;
+        } else {
+            play_btn.scale = zscale*0.5;
+        };
+
+
+        if (credits_btn.mouse.hovering && credits_btn.mouse.pressing()) {
+            trans_box.moveTo(width*0.5, height*0.5, 60);
+            sfx_click.play()
+            window.location.replace('https://rentry.co/tar-credits')
+        } else if (credits_btn.mouse.hovering()) {
+            credits_btn.scale = zscale*0.7;
+        } else {
+            credits_btn.scale = zscale*0.5;
+        };
+        };
+
+        shake = 0.001
+        this.title_shake = function() {
+        if (title_box.scale > zscale*0.5 || title_box.scale < zscale*0.45) {
+            shake = -shake;
+        };
+        title_box.scale += shake;
+        };
+        };
+    </script> 
+    <script>
+        let scene_flow = 0;
+        let chat_flow = 0;
+        let current_text = '';
+        let current_index = 0;
+        let can_jump = true;
+        let tutorial1 = true;
+        let timer = 0;
+
+        var playsfx = (function () {
+        var executed = false;
+        return function (sfx) {
+        if (!executed) {
+        executed = true;
+        sfx.play()
+        }
+        };
+        })();
+
+        function scene1() {
+
+        this.enter = function() {
+        startTime()
+        world.gravity.y = 30
+        debug = true;
+        cam = new Sprite(width*0.5,height*0.5, 0, 0, 'n');
+        cam.visible = false;
+        //cam.debug = true;
+
+
+        turtle = new Sprite(width*2.2,height*0.5);
+        turtle.img = turtle_img;
+        turtle.diameter = turtle.img.height/2;
+        turtle.scale = zscale*0.25;
+
+        //turtle.debug = true;
+
+        rabbit = new Sprite(width*0.5,height*0.5,);
+        rabbit.img = rabbit_img;
+        rabbit.offset.y = zscale*-20;
+        rabbit.offset.x = zscale*-5;
+        rabbit.diameter = rabbit.img.height/2;
+        rabbit.scale = zscale*0.25;
+        //rabbit.debug = true;
+        rabbit.rotationLock = true;
+        rabbit.friction = 1;
+
+        floor = new Sprite(width*0.5,height*0.9, width*999, height*0.1, 's')
+        floor.color = '#90EE90'
+
+        floor2 = new Sprite(width*0.5,height*1.2, width*999, height*0.5, 's')
+        floor2.color = "#C4A484"
+
+        pc = new Sprite(width*0.38,height*0.7);
+        pc.img = pc_img;
+        pc.scale = zscale*0.25;
+        //pc.debug = true;
+
+        wall = new Sprite(width*0.2,height*0.7,width*0.1,height*999, 's');
+        wall.visible = false;
+
+        cr = new Sprite(width*1,height*0.74, 'n');
+        cr.img = cr_img;
+        //cr.offset.y = -200;
+        //cr.offset.x = 0
+        cr.scale = zscale*0.25;
+        //cr.debug = true;
+
+        trans_box = new Sprite(width*0.5, height*0.5, width+10, height+10, 'n')
+        trans_box.color = 'black'
+        trans_box.visible = false;
+
+        out_box = new Sprite(width*0.5, height*0.5, width+40, height+10, 'n')
+        out_box.color = 'black'
+        out_box.visible = false;
+        //out_box.debug = true;
+
+        diabox = new Sprite(width*0.5, height*0.75, width*0.95, height*0.4, 'n')
+        diabox.visible = false;
+        diabox.color = 225;
+        diabox.stroke = 5
+        };
+
+        this.setup = function() {
+        print(floor)
+        };
+
+        this.draw = function() {
+        background('#8eccfe')
+        image(bg2_img, 0, 0, width, height)
+        flower()
+        cam.text = scene_flow + ' ' + chat_flow + ' ' + timer +' '+width+' '+height+' '+width/height
+        };
+        };
+
+        function drawer() {
+        cr.draw()
+        floor.draw()
+        floor2.draw()
+        pc.draw()
+        turtle.draw()
+        rabbit.draw()
+        }
+
+        let play1 = true
+
+        function playbg1() {
+        if (play1){
+        scene1_bgm.play()
+        play1 = false
+        }
+        }
+        let who;
+        function dialogue1() {
+        chat_scene = chat.scene0[chat_flow]
+        if (current_text.length == chat_scene.length) {
+        talking = false
+        } else {
+        talking = true
+        current_text += chat.scene0[chat_flow][current_index];
+        current_index++
+        }
+
+        if (talking) {
+        if (chat_scene.startsWith('R')) {
+            if (sfx_rabbit.isPlaying()) {
+            } else {
+                sfx_rabbit.play()
+            }
+        }
+        if (chat_scene.startsWith('T')) {
+            if (sfx_turtle.isPlaying()) {
+                
+            } else {
+                sfx_turtle.play()
+            }
+        }
+        if (chat_scene.startsWith('N')) {
+            if (sfx_master.isPlaying()) {
+                
+            } else {
+                sfx_master.play()
+            }
+        }
+        } else {
+        if (sfx_turtle.isPlaying()) {
+            sfx_turtle.stop()
+        }
+        if (sfx_rabbit.isPlaying()) {
+            sfx_rabbit.stop()
+        }
+        if (sfx_master.isPlaying()) {
+            sfx_master.stop()
+        }
+        }
+        if (mouse.presses()) {
+        current_text = ''
+        current_index = 0;
+        if (chat_flow == 35) {
+            current_text = chat_scene[current_index];
+        } else {
+            chat_flow++
+        }
+        }
+        }
+
+        function changeflow(tchat, tflow) {
+        if (chat_flow == tchat) {
+        scene_flow = tflow;
+        } else {
+        //pass
+        }
+        }
+
+        function flower() {
+        camera.x = cam.x;
+        camera.y = cam.y;
+        switch (scene_flow) {
+        case 0:
+            camera.on()
+            drawer()
+            trans_box.draw()
+            camera.off()
+            diabox.visible = true;
+            diabox.draw()
+            fill(0)
+            dialogue1()
+            text(current_text, width*0.04, height*0.63)
+            changeflow(4,1)
+            break;
+        case 1:
+            playbg1()
+            camera.on()
+            trans_box.x += -30
+            camera.off()
+            diabox.visible = false;
+            if (trans_box.x < width*-0.5) {
+                trans_box.remove()
+                scene_flow = 2
+            }
+            break;
+        case 2:
+            camera.on()
+            drawer()
+            cam.moveTowards(rabbit,0.10)
+            camera.off()
+            diabox.draw()
+            dialogue1()
+            changeflow(8,3)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 3:
+            camera.on()
+            drawer()
+            cam.moveTowards(rabbit,0.10)
+            if (mouse.presses() && can_jump) {
+                tutorial1 = false;
+                if (camera.mouse.x > width*0.5) {
+                    sfx_jump.play()
+                    rabbit.vel.x = zscale*10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = true;
+                    can_jump = false;
+                } else {
+                    sfx_jump.play()
+                    rabbit.vel.x = zscale*-10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = false
+                    can_jump = false;
+                }
+            }
+            camera.off()
+            diabox.visible = false;
+            if (rabbit.collides(floor)) {
+                can_jump = true;
+            }
+            if (tutorial1) {
+                text('tap the left/right screen to move',width*0.2,height*0.8)
+            }
+            if (rabbit.collides(turtle)) {
+                scene_flow = 4;
+                playsfx(sfx_pipe)
+            }
+            break;
+        case 4:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(11,5)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 5:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(12,6)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 6:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(15,7)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 7:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(16,8)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 8:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.visible = false;
+            timer++
+            if (timer == 100) {
+                scene_flow = 9;
+                timer = 0;
+            }
+            break;
+        case 9:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(17,10)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 10:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(18,11)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 11:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(19,12)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 12:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(20,13)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 13:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(21,14)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 14:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(22,15)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 15:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(23,16)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 16:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(24,17)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 17:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(25,18)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 18:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(26,19)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 19:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(33,20)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 20:
+            cam.moveTowards(turtle,0.10);
+            camera.on()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1()
+            changeflow(34,21)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 21:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            out_box.draw()
+            drawer()
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            dialogue1();
+            //out_box.draw()
+            out_box.visible=false;
+            out_box.x = camera.x+width+10;
+            out_box.y = camera.y;
+            changeflow(35,22)
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 22:
+            cam.moveTowards(rabbit,0.10);
+            camera.on()
+            drawer()
+            rabbit.scale += 0.05
+            rabbit.rotationSpeed = 1
+            camera.off()
+            diabox.draw()
+            diabox.visible = true;
+            
+            dialogue1()
+            text(current_text, width*0.04, height*0.63)
+            out_box.visible=true;
+            out_box.y = cam.y
+            out_box.x += -30
+            //rabbit.scale.x > 3 &&
+            
+            if ((out_box.x < cam.x)){
+                scene_flow = 23
+            }
+            break;
+        case 23:
+            out_box.x = camera.x
+            out_box.y = camera.y
+            //scene1_bgm.stop()
+            sm.showScene(scene2)
+            break;
+        }
+        }
+    </script> 
+    <script>
+        function scene2() {
+
+        this.enter = function () {
+        allSprites.removeAll()
+        scene_flow = 0;
+        chat_flow = 0;
+        current_text = '';
+        current_index = 0;
+        can_jump = true;
+        tutorial1 = true;
+        timer = 0;
+
+        world.gravity.y = 30
+        cam = new Sprite(width*0.5,height*0.5, 0, 0, 'n');
+        cam.visible = false;
+        cam.debug = true;
+
+        turtle = new Sprite(width*0.35,height*0.5);
+        turtle.img = turtle_img;
+        turtle.diameter = turtle.img.height/2;
+        turtle.scale = zscale*0.25;
+
+        //turtle.debug = true;
+
+        rabbit = new Sprite(width*0.5,height*0.5);
+        rabbit.img = rabbit_img;
+        rabbit.offset.y = zscale*-20;
+        rabbit.offset.x = zscale*-5;
+        rabbit.diameter = rabbit.img.height/2;
+        rabbit.scale = zscale*0.25;
+        //rabbit.debug = true;
+        rabbit.rotationLock = true;
+        rabbit.friction = 1;
+
+        floor = new Sprite(width*0.5,height*0.9, width*999, height*0.1, 's')
+        floor.color = '#90EE90'
+
+        floor2 = new Sprite(width*0.5,height*1.2, width*999, height*0.5, 's')
+        floor2.color = "#C4A484"
+
+        wall = new Sprite(width*0.2,height*0.7,width*0.1,height*999, 's');
+        wall.visible = false;
+
+        cr = new Sprite(width*1.5,height*0.74, 'n');
+        cr.img = cr_img;
+        //cr.offset.y = -200;
+        //cr.offset.x = 0
+        cr.scale = zscale*0.25;
+        cr.mirror.x = true;
+        //cr.debug = true;
+
+        flag = new Sprite(width*0.6,height*0.74, 'n');
+        flag.img = flag_img;
+        flag.scale = zscale*0.25;
+        flag.mirror.x = true;
+
+        bed = new Sprite(width*2.5,height*0.74, 's');
+        bed.img = bed_img;
+        bed.scale = zscale*0.25;
+        //bed.debug = true;
+
+        trans_box = new Sprite(width*0.5, height*0.5, width+10, height+10, 'n')
+        trans_box.color = 'black'
+        trans_box.visible = false;
+
+        out_box = new Sprite(width*0.5, height*0.5, width+40, height+10, 'n')
+        out_box.color = 'black'
+        out_box.visible = false;
+        //out_box.debug = true;
+
+        diabox = new Sprite(width*0.5, height*0.75, width*0.95, height*0.4, 'n')
+        diabox.visible = false;
+        diabox.color = 225;
+
+
+        }
+
+        this.draw = function () {
+        clear()
+        background('#8eccfe')
+        image(bg2_img, 0, 0, width, height)
+        flower2()
+        cam.text = scene_flow + ' ' + chat_flow + ' ' + timer +' '+width+' '+height+' '+width/height
+        }
+        }
+
+        function drawer2 () {
+        cr.draw()
+        bed.draw()
+        flag.draw()
+        floor.draw()
+        floor2.draw()
+        rabbit.draw()
+        turtle.draw()
+        }
+
+        function dialogue2() {
+        chat_scene = chat.scene1[chat_flow]
+        if (current_text.length == chat_scene.length) {
+        talking = false
+        } else {
+        talking = true
+        current_text += chat_scene[current_index];
+        current_index++
+        }
+
+        if (talking) {
+        if (chat_scene.startsWith('R')) {
+            if (sfx_rabbit.isPlaying()) {
+            } else {
+                sfx_rabbit.play()
+            }
+        }
+        if (chat_scene.startsWith('T')) {
+            if (sfx_turtle.isPlaying()) {
+                
+            } else {
+                sfx_turtle.play()
+            }
+        }
+        if (chat_scene.startsWith('N')) {
+            if (sfx_master.isPlaying()) {
+                
+            } else {
+                sfx_master.play()
+            }
+        }
+        } else {
+        if (sfx_turtle.isPlaying()) {
+            sfx_turtle.stop()
+        }
+        if (sfx_rabbit.isPlaying()) {
+            sfx_rabbit.stop()
+        }
+        if (sfx_master.isPlaying()) {
+            sfx_master.stop()
+        }
+        }
+        if (mouse.presses()) {
+        current_text = ''
+        current_index = 0;
+        if (chat_flow == 35) {
+            current_text = chat_scene[current_index];
+        } else {
+            chat_flow++
+        }
+        }
+        }
+
+        let play2 = true
+        function playbg2() {
+        if (play2){
+        scene2_bgm.play()
+        play2 = false
+        }
+        }
+
+        let trans_box_alpha = 0
+
+        function flower2() {
+        camera.x = cam.x;
+        camera.y = cam.y;
+
+        switch (scene_flow) {
+        case 0:
+            //trans_box.color.mode.hsba = (0,0,100,0)
+            camera.on()
+            drawer2()
+            camera.off()
+            trans_box.draw()
+            timer++
+            turtle.mirror.x = true
+            if (timer > 10) {
+                scene_flow = 1
+                timer = 0;
+            }
+            break;
+        case 1:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            drawer2()
+            camera.off()
+            trans_box.draw()
+            diabox.draw()
+            dialogue2()
+            text(current_text, width*0.04, height*0.63)
+            changeflow(4,2)
+            break;
+        case 2:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.remove()
+            trans_box.draw()
+            trans_box.x += -40
+            if (trans_box.x < width*-0.6) {
+                scene_flow = 3
+                trans_box.remove()
+            }
+            scene1_bgm.stop()
+            playbg2()
+            break;
+        case 3:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (chat_flow == 7) {
+                scene_flow = 4;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 4:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (rabbit.collides(floor)) {
+                sfx_jump.play()
+                rabbit.vel.y = zscale*-5
+            }
+            if (chat_flow == 8) {
+                scene_flow = 5;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 5:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (chat_flow == 10) {
+                scene_flow = 6;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 6:
+            cam.moveTowards(turtle,0.1)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (chat_flow == 11) {
+                scene_flow = 7;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 7:
+            cam.moveTowards(rabbit,0.1)
+            rabbit.mirror.x = true;
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (chat_flow == 16) {
+                scene_flow = 8;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 8:
+            
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            drawer2()
+            if (mouse.presses() && can_jump) {
+                tutorial1 = false;
+                if (camera.mouse.x > width*0.5) {
+                    sfx_jump.play()
+                    rabbit.vel.x = zscale*10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = true;
+                    can_jump = false;
+                } else {
+                    sfx_jump.play()
+                    rabbit.vel.x = zscale*-10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = false
+                    can_jump = false;
+                }
+            }
+            camera.off()
+            if (rabbit.collides(floor)) {
+                can_jump = true;
+            }
+            if (rabbit.collides(turtle)) {
+                sfx_pipe.play()
+            }
+            if (tutorial1) {
+                text('tap the left/right screen to move',width*0.2,height*0.8)
+            }
+            diabox.remove()
+            if (rabbit.collides(bed)) {
+                scene_flow = 9
+            }
+            break;
+        case 9:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (chat_flow == 19) {
+                scene_flow = 10;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 10:
+            cam.moveTowards(turtle,0.05)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (chat_flow == 21) {
+                scene_flow = 11;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 11:
+            cam.moveTowards(rabbit,0.05)
+            camera.on()
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            if (chat_flow == 25) {
+                scene_flow = 12;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 12:
+            cam.moveTowards(bed,1)
+            camera.on()
+            rabbit.x = bed.x;
+            rabbit.y = bed.y;
+            rabbit.mirror.x = false;
+            rabbit.mirror.y = true;
+            drawer2()
+            camera.off()
+            diabox.draw()
+            dialogue2()
+            trans_box.color = color(255, 255, 255, 0)
+            trans_box.draw()
+            trans_box.x = width/2
+            trans_box.y = height/2
+            if (mouse.presses()) {
+                scene_flow = 13;
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 13:
+            cam.moveTowards(bed,1)
+            camera.on()
+            rabbit.x = bed.x;
+            rabbit.y = bed.y;
+            rabbit.mirror.x = false;
+            rabbit.mirror.y = true;
+            drawer2()
+            camera.off()
+            trans_box.draw()
+            trans_box.color = color(255, 255, 255, trans_box_alpha)
+            trans_box_alpha += 5
+            if (trans_box_alpha == 255) {
+                scene_flow = 14;
+                sm.showScene(scene3)
+                
+            }
+            break;
+        }
+        }
+    </script> 
+    <script>
+        function scene3 () {
+        this.enter = function() {
+        allSprites.removeAll()
+        scene_flow = 0;
+        chat_flow = 0;
+        current_text = '';
+        current_index = 0;
+        can_jump = true;
+        tutorial1 = true;
+        timer = 0;
+        trans_box_alpha = 250;
+        world.gravity.y = 30;
+
+        cam = new Sprite(width*0.5,height*0.75, 0, 0, 'n');
+        cam.visible = false;
+        //cam.debug = true;
+
+        white_box = new Sprite(width*0.5,height*0.5,width+10,height+10, 'n')
+        white_box.color = 'white'
+
+        diabox = new Sprite(width*0.5, height*0.75, width*0.95, height*0.4, 'n')
+        diabox.visible = false;
+        diabox.color = 225;
+
+        floor = new Sprite(width*0.5,height*0.9, width*999, height*0.1, 's')
+        floor.color = '#90EE90'
+
+        floor2 = new Sprite(width*0.5,height*1.2, width*999, height*0.5, 's')
+        floor2.color = "#C4A484"
+
+        rabbit = new Sprite(width*0.5,height*0.75);
+        rabbit.img = rabbit_img;
+        rabbit.offset.y = zscale*-20;
+        rabbit.offset.x = zscale*-5;
+        rabbit.diameter = rabbit.img.height/2;
+        rabbit.scale = zscale*0.25;
+        //rabbit.debug = true;
+        rabbit.rotationLock = true;
+        rabbit.friction = 1;
+
+        carrots = new Group()
+        carrots.img = carrot_img
+        carrots.scale = zscale*0.25;
+        carrots.diameter = carrot_img.height/2
+        //carrots.debug = true
+
+        rabbit.overlaps(carrots, collect)
+        floor.overlaps(carrots, crash)
+        }
+
+        this.draw = function() {
+        clear()
+        background(225)
+        flower3()
+        cam.text = scene_flow + ' ' + chat_flow + ' ' + timer +' '+collected
+        }
+        }
+
+        function dialogue3() {
+        chat_scene = chat.scene2[chat_flow]
+        if (current_text.length == chat_scene.length) {
+        talking = false
+        } else {
+        talking = true
+        current_text += chat_scene[current_index];
+        current_index++
+        }
+
+        if (talking) {
+        if (chat_scene.startsWith('R')) {
+            if (sfx_rabbit.isPlaying()) {
+            } else {
+                sfx_rabbit.play()
+            }
+        }
+        if (chat_scene.startsWith('T')) {
+            if (sfx_turtle.isPlaying()) {
+                
+            } else {
+                sfx_turtle.play()
+            }
+        }
+        if (chat_scene.startsWith('N')) {
+            if (sfx_master.isPlaying()) {
+                
+            } else {
+                sfx_master.play()
+            }
+        }
+        } else {
+        if (sfx_turtle.isPlaying()) {
+            sfx_turtle.stop()
+        }
+        if (sfx_rabbit.isPlaying()) {
+            sfx_rabbit.stop()
+        }
+        if (sfx_master.isPlaying()) {
+            sfx_master.stop()
+        }
+        }
+        if (mouse.presses()) {
+        current_text = ''
+        current_index = 0;
+        if (chat_flow == 35) {
+            current_text = chat_scene[current_index];
+        } else {
+            chat_flow++
+        }
+        }
+        }
+
+        function drawer3() {
+        floor.draw()
+        floor2.draw()
+        rabbit.draw()
+        carrots.draw()
+        }
+
+        let play3 = true
+
+        function playbg3() {
+        if (play3){
+        scene3_bgm.play()
+        play3 = false
+        }
+        }
+
+        function rain_carrots() {
+        if (timer == 40) {
+        timer = 0
+        let carrot = new carrots.Sprite()
+        carrot.y = height*-0.1
+        carrot.x = random(width*0.3,width*0.6)
+        } else {
+        timer ++
+        }
+        }
+
+        let collected = 0
+        let collectable = false
+        let big_boy;
+        function collect(rabbit, carrot) {
+        if (collectable) {
+        collected ++
+        carrot.remove()
+        sfx_eat.play()
+        }
+        }
+        function crash(floor, carrot) {
+        carrot.remove()
+        }
+        let turtle_set = true
+        function set_turtle(){
+        if (turtle_set) {
+        turtle_set = false
+        big_boy = new Sprite(width*0.5,height*-0.5,'d');
+        big_boy.img = turtle_img;
+        big_boy.diameter = big_boy.img.height/2;
+        big_boy.scale = zscale*0.6;
+        //big_boy.debug = true
+        //turtle.visible = false
+        }
+        }
+
+        function flower3() {
+        camera.x = cam.x;
+        camera.y = cam.y;
+        switch (scene_flow) {
+        case 0:
+            scene2_bgm.stop()
+            playbg3()
+            white_box.x = cam.x
+            white_box.y = cam.y
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            rain_carrots()
+            drawer3()
+            camera.off()
+            white_box.color = color(255, 255, 255, trans_box_alpha)
+            trans_box_alpha -= 5
+            if (trans_box_alpha == 0) {
+                white_box.remove()
+                scene_flow = 1;
+            }
+            break;
+        case 1:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            rain_carrots()
+            drawer3()
+            camera.off()
+            dialogue3()
+            diabox.draw()
+            text(current_text, width*0.04, height*0.63)
+            if (chat_flow == 2) {
+                scene_flow = 2
+            }
+            break;
+        case 2:
+            camera.on()
+            rain_carrots()
+            collectable = true
+            cam.moveTowards(width*0.5, height*0.5, 0.1)
+            if (mouse.presses() && can_jump) {
+                tutorial1 = false;
+                sfx_jump.play()
+                if (camera.mouse.x > width*0.5) {
+                    rabbit.vel.x = zscale*10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = true;
+                    can_jump = false;
+                } else {
+                    rabbit.vel.x = zscale*-10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = false
+                    can_jump = false;
+                }
+            }
+            camera.off()
+            if (rabbit.x < width*0.1) {
+                rabbit.vel.x = zscale*10;
+                rabbit.vel.y = zscale*-5;
+                rabbit.mirror.x = true
+            } else if (rabbit.x > width*0.9) {
+                rabbit.vel.x = zscale*-10;
+                rabbit.vel.y = zscale*-5;
+                rabbit.mirror.x = false
+            }
+            if (rabbit.collides(floor)) {
+                can_jump = true;
+            }
+            if (tutorial1) {
+                text('tap the left/right screen to move',width*0.2,height*0.3)
+            }
+            text('carrots collected: '+collected,width*0.05,height*0.1)
+            diabox.remove()
+            if (collected == 5) {
+                scene_flow = 3
+            }
+            break;
+        case 3:
+            camera.on()
+            set_turtle()
+            big_boy.moveTowards(rabbit,0.2)
+            rain_carrots()
+            cam.moveTowards(width*0.5, height*0.5, 0.1)
+            if (mouse.presses() && can_jump) {
+                tutorial1 = false;
+                if (camera.mouse.x > width*0.5) {
+                    rabbit.vel.x = zscale*10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = true;
+                    can_jump = false;
+                } else {
+                    rabbit.vel.x = zscale*-10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = false
+                    can_jump = false;
+                }
+            }
+            camera.off()
+            if (rabbit.collides(floor)) {
+                can_jump = true;
+            }
+            text('carrots collected: '+collected, width*0.05,height*0.1)
+            diabox.remove()
+            if (big_boy.collides(rabbit)) {
+                sm.showScene(scene4)
+            }
+            break;
+        }
+        }
+    </script> 
+    <script>
+        function scene4 () {
+        this.enter = function() {
+        allSprites.removeAll()
+        scene_flow = 0;
+        chat_flow = 0;
+        current_text = '';
+        current_index = 0;
+        can_jump = true;
+        tutorial1 = true;
+        timer = 0;
+        trans_box_alpha = 250;
+
+        world.gravity.y = 30
+        cam = new Sprite(width*2.6,height*0.5, 0, 0, 'n');
+        cam.visible = false;
+        //cam.debug = true;
+
+        white_box = new Sprite(width*0.5,height*0.5,width+10,height+10, 'n')
+        white_box.color = 'white'
+
+        diabox = new Sprite(width*0.5, height*0.75, width*0.95, height*0.4, 'n')
+        diabox.visible = false;
+        diabox.color = 225;
+
+        floor = new Sprite(width*0.5,height*0.9, width*999, height*0.1, 's')
+        floor.color = '#90EE90'
+
+        floor2 = new Sprite(width*0.5,height*1.2, width*999, height*0.5, 's')
+        floor2.color = "#C4A484"
+
+        cr = new Sprite(width*1.5,height*0.74, 'n');
+        cr.img = cr_img;
+        //cr.offset.y = -200;
+        //cr.offset.x = 0
+        cr.scale = zscale*0.25;
+        cr.mirror.x = true;
+        //cr.debug = true;
+
+        flag = new Sprite(width*0.6,height*0.74, 'n');
+        flag.img = flag_img;
+        flag.scale = zscale*0.25;
+        flag.mirror.x = true;
+
+        flag2 = new Sprite(width*3.6,height*0.74, 'n');
+        flag2.img = flag_img;
+        flag2.scale = zscale*0.25;
+        //flag2.mirror.x = true;
+
+        bed = new Sprite(width*2.5,height*0.74, 's');
+        bed.img = bed_img;
+        bed.scale = zscale*0.25;
+        //bed.debug = true;
+
+        bed2 = new Sprite(width*3.8,height*0.74, 's');
+        bed2.img = bed_img;
+        bed2.scale = zscale*0.25;
+        //bed2.debug = true;
+        bed2.visible = false;
+
+        wall = new Sprite(width*3.7,height*0.7,width*0.1,height*999, 's');
+        wall.visible = false;
+
+        turtle = new Sprite(width*3.5,height*0.5);
+        turtle.img = turtle_img;
+        turtle.diameter = turtle.img.height/2;
+        turtle.scale = zscale*0.25;
+        //turtle.debug = true
+        turtle.rotationDrag = 0
+        turtle.drag = 0
+        //turtle.friction = 0
+        rabbit = new Sprite(width*2.6,height*0.75);
+        rabbit.img = rabbit_img;
+        rabbit.offset.y = zscale*-20;
+        rabbit.offset.x = zscale*-5;
+        rabbit.diameter = rabbit.img.height/2;
+        rabbit.scale = zscale*0.25;
+        //rabbit.debug = true;
+        rabbit.rotationLock = true;
+        rabbit.friction = 1;
+
+        out_box = new Sprite(cam.x, cam.y, width+40, height+10, 'n')
+        out_box.color = 'black'
+        out_box.visible = false;
+        //out_box.debug = true;
+        play2 = true
+        scene3_bgm.stop()
+        }
+
+        this.draw = function() {
+        clear()
+        background('#8eccfe')
+        image(bg2_img, 0, 0, width, height)
+        flower4()
+        cam.text = scene_flow + ' ' + chat_flow + ' ' + timer +' '+collected
+        }
+        }
+
+        function dialogue4() {
+        chat_scene = chat.scene3[chat_flow]
+        if (current_text.length == chat_scene.length) {
+        talking = false
+        } else {
+        talking = true
+        current_text += chat_scene[current_index];
+        current_index++
+        }
+
+        if (talking) {
+        if (chat_scene.startsWith('R')) {
+            if (sfx_rabbit.isPlaying()) {
+            } else {
+                sfx_rabbit.play()
+            }
+        }
+        if (chat_scene.startsWith('T')) {
+            if (sfx_turtle.isPlaying()) {
+                
+            } else {
+                sfx_turtle.play()
+            }
+        }
+        if (chat_scene.startsWith('N')) {
+            if (sfx_master.isPlaying()) {
+                
+            } else {
+                sfx_master.play()
+            }
+        }
+        } else {
+        if (sfx_turtle.isPlaying()) {
+            sfx_turtle.stop()
+        }
+        if (sfx_rabbit.isPlaying()) {
+            sfx_rabbit.stop()
+        }
+        if (sfx_master.isPlaying()) {
+            sfx_master.stop()
+        }
+        }
+        if (mouse.presses()) {
+        current_text = ''
+        current_index = 0;
+        if (chat_flow == 99) {
+            current_text = chat_scene[current_index];
+        } else {
+            chat_flow++
+        }
+        }
+        }
+
+        function drawer4() {
+        floor.draw()
+        floor2.draw()
+        cr.draw()
+        flag.draw()
+        flag2.draw()
+        turtle.draw()
+        rabbit.draw()
+        }
+        var playsfx2 = (function () {
+        var executed = false;
+        return function (sfx) {
+        if (!executed) {
+        executed = true;
+        sfx.play()
+        }
+        };
+        })();
+        var playsfx3 = (function () {
+        var executed = false;
+        return function (sfx) {
+        if (!executed) {
+        executed = true;
+        sfx.play()
+        }
+        };
+        })();
+        function flower4() {
+        camera.x = cam.x;
+        camera.y = cam.y;
+        switch (scene_flow) {
+        case 0:
+            playsfx2(sfx_pipe)
+            white_box.x = cam.x
+            white_box.y = cam.y
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            white_box.color = color(255, 255, 255, trans_box_alpha)
+            trans_box_alpha -= 5
+            if (chat_flow == 3) {
+                white_box.remove()
+                scene_flow = 1;
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 1:
+            cam.moveTowards(flag.x, flag.y+(zscale*50),0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 5) {
+                scene_flow = 2
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 2:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 6) {
+                scene_flow = 3
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 3:
+            cam.moveTowards(rabbit.x,rabbit.y+(zscale*50),0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 7) {
+                scene_flow = 4
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 4:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 8) {
+                scene_flow = 5
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 5:
+            cam.moveTowards(turtle,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            rabbit.mirror.x = true
+            camera.off()
+            if (chat_flow == 9) {
+                scene_flow = 6
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 6:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            rabbit.mirror.x = true
+            camera.off()
+            diabox.draw()
+            dialogue4()
+            if (chat_flow == 10) {
+                scene_flow = 7
+            }
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 7:
+            playbg2()
+            diabox.remove()
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            if (mouse.presses() && can_jump) {
+                tutorial1 = false;
+                sfx_jump.play()
+                if (camera.mouse.x > width*0.5) {
+                    rabbit.vel.x = zscale*10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = true;
+                    can_jump = false;
+                } else {
+                    rabbit.vel.x = zscale*-10;
+                    rabbit.vel.y = zscale*-5;
+                    rabbit.mirror.x = false
+                    can_jump = false;
+                }
+            }
+            camera.off()
+            if (rabbit.collides(floor)) {
+                can_jump = true;
+            }
+            if (tutorial1) {
+                text('tap the left/right screen to move,\nHURRY UP!',width*0.2,height*0.8)
+            }
+            if (rabbit.x > turtle.x-(zscale*150)) {
+                rabbit.vel.y = 10
+                rabbit.vel.x = 40
+            }
+            if (rabbit.collides(turtle)) {
+                turtle.vel.x = 10
+                scene_flow = 8
+            }
+            break;
+        case 8:
+            playsfx3(sfx_pipe)
+            scene2_bgm.stop()
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 12) {
+                scene_flow = 9
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 9:
+            cam.moveTowards(turtle,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 13) {
+                scene_flow = 10
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 10:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 18) {
+                scene_flow = 11
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 11:
+            cam.moveTowards(turtle,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 19) {
+                scene_flow = 12
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 12:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 20) {
+                scene_flow = 13
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 13:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 29) {
+                scene_flow = 14
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 14:
+            cam.moveTowards(turtle,0.1)
+            camera.on()
+            bed.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 30) {
+                scene_flow = 15
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 15:
+            cam.moveTowards(bed.x, bed.y+(zscale*20),0.1)
+            camera.on()
+            bed.visible = false
+            drawer4()
+            camera.off()
+            if (chat_flow == 32) {
+                scene_flow = 16
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 16:
+            cam.moveTowards(bed.x, bed.y+(zscale*50),0.1)
+            camera.on()
+            bed.visible = false
+            drawer4()
+            camera.off()
+            if (chat_flow == 33) {
+                scene_flow = 17
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 17:
+            cam.moveTowards(bed2.x, bed2.y+(zscale*20),0.1)
+            camera.on()
+            bed2.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 34) {
+                scene_flow = 18
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 18:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed2.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 35) {
+                scene_flow = 19
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 19:
+            cam.moveTowards(rabbit.x,rabbit.y+(zscale*50),0.1)
+            camera.on()
+            bed2.draw()
+            drawer4()
+            camera.off()
+            if (chat_flow == 37) {
+                scene_flow = 20
+            }
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            break;
+        case 20:
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed2.draw()
+            drawer4()
+            camera.off()
+            diabox.draw()
+            dialogue4()
+            text(current_text, width*0.04, height*0.63)
+            out_box.x = cam.x*1.5
+            if (chat_flow == 38) {
+                scene_flow = 21
+            }
+            break;
+        case 21:
+            out_box.visible = true
+            out_box.y = cam.y
+            out_box.x += -30
+            cam.moveTowards(rabbit,0.1)
+            camera.on()
+            bed2.draw()
+            drawer4()
+            camera.off()
+            
+
+            console.clear()
+
+            if (out_box.x < cam.x || out_box.x == cam.x) {
+                out_box.x = cam.x
+                out_box.y = cam.y
+                sm.showScene(scene5)
+            }
+            //out_box.draw()
+            break;
+        }
+        }
+    </script> 
+    <script>
+        function scene5() {
+
+        this.enter = function() {
+        chat_flow = 38
+        current_index = 0
+        world.gravity.y = 10
+        allSprites.removeAll()
+        endTime()
+        console.log(edisplay)
+        menu_bgm.play()
+        scene_flow = 0
+
+        diabox = new Sprite(width*0.5, height*0.75, width*0.95, height*0.4, 'n')
+        diabox.visible = false;
+        diabox.color = 225;
+
+        //floor = new Sprite(width*0.5, height, width*1.2, height*0.1, 's')
+
+        turtles = new Group()
+        turtles.img = turtle_img
+        turtles.scale = zscale*0.25;
+        turtles.diameter = turtle_img.height/2
+
+        }
+
+        this.draw = function() {
+        background(0)
+        flower5()
+        //text(chat_flow, width*0.5, height*0.8)
+        }
+        }
+
+        function rain_turtle() {
+        if (timer == 100) {
+        timer = 0
+        turtle = new turtles.Sprite()
+        turtle.y = height*-0.1
+        turtle.x = random(width*0.1,width*0.9)
+        turtle.rotationSpeed = random(-1,1)
+        } else {
+        timer ++
+        }
+        }
+
+        function dialogue5() {
+        txt = "THE END\nMoral of the story:\nNever sleep while you're on a race\n\nTotal carrots collected: "+collected+"\nTime Elapsed: "+edisplay+"\n\nggwp :)\n\n(tap to return to main menu)";
+        if (current_text.length == txt.length) {
+        talking = false
+        } else {
+        talking = true
+        current_text += txt[current_index];
+        current_index++
+        }
+
+        if (talking) {
+        if (chat_scene.startsWith('true')) {
+            if (sfx_master.isPlaying()) {
+                
+            } else {
+                sfx_master.play()
+            }
+        }
+        } else {
+        if (sfx_turtle.isPlaying()) {
+            sfx_turtle.stop()
+        }
+        if (sfx_rabbit.isPlaying()) {
+            sfx_rabbit.stop()
+        }
+        if (sfx_master.isPlaying()) {
+            sfx_master.stop()
+        }
+        }
+        }
+        function flower5() {
+        switch (scene_flow) {
+        case 0:
+            if (chat_flow == 43) {
+                scene_flow = 1
+                
+            } else {
+                diabox.draw()
+                dialogue4()
+                text(current_text, width*0.04, height*0.63)
+            }
+            break;
+        case 1:
+            diabox.remove()
+            rain_turtle()
+            textAlign(CENTER)
+            fill(250)
+            dialogue5()
+            text(current_text, width*0.5, height*0.13)
+            if (mouse.presses()) {
+                sm.showScene(Menu)
+            }
+            break;
+        }
+        }
+    </script> 
+    <script>
+        let sm, zscale;
+
+        function preload() {
+        sans = loadFont('src/idk/ComicMono.ttf')
+        chat = loadJSON('src/idk/chat.json')
+        bg_img = loadImage('src/img/bg_trees.png')
+        bg2_img = loadImage('src/img/bg_trees2.png')
+        turtle_img = loadImage('src/img/turtle.png')
+        rabbit_img = loadImage('src/img/rabbit.png')
+        title_img = loadImage('src/img/title.png');
+        play_img = loadImage('src/img/play.png');
+        //settings_img = loadImage('src/settings.png');
+        credits_img = loadImage('src/img/credits.png')
+        pc_img = loadImage('src/img/pc.png')
+        cr_img = loadImage('src/img/cr.png')
+        bed_img = loadImage('src/img/bed.png')
+        carrot_img = loadImage('src/img/carrot.png')
+        flag_img = loadImage('src/img/flag.png')
+        sun_img = loadImage('src/img/sun.png')
+
+        soundFormats('mp3');
+        menu_bgm = loadSound('src/sfx/yoshis-island-ost-overworld.mp3')
+        scene1_bgm = loadSound('src/sfx/yoshis-island-flower-garden.mp3')
+        scene2_bgm = loadSound('src/sfx/yoshis-island-ost-athletic.mp3')
+        scene3_bgm = loadSound('src/sfx/yoshis-island-powerful-Infant.mp3')
+        sfx_pipe = loadSound('src/sfx/pipe.mp3')
+        sfx_turtle = loadSound('src/sfx/txtt.mp3')
+        sfx_rabbit = loadSound('src/sfx/txtr.mp3')
+        sfx_master = loadSound('src/sfx/txtn.mp3')
+        sfx_jump = loadSound('src/sfx/jump.mp3')
+        sfx_eat = loadSound('src/sfx/eat.mp3')
+        sfx_click = loadSound('src/sfx/click.mp3')
+        }
+
+        let talking = false
+        function setup() {
+
+        new Canvas('16:9');
+        zscale = Math.sqrt((width * height)/(995 * 557));
+        textFont(sans);
+        textSize(width*0.037)
+        sm = new SceneManager();
+        sm.addScene(Menu);
+        sm.addScene(scene1);
+        sm.addScene(scene2);
+        sm.addScene(scene3);
+        sm.addScene(scene4);
+        sm.addScene(scene5)
+        sm.showScene(Menu);
+        sfx_pipe.playMode('restart')
+        };
+
+        function draw() {
+        //frameCount = 60;
+        //renderStats();
+
+        clear();
+        sm.draw();
+        }
+
+        var start, end, elapsed, edisplay;
+
+        function startTime() {
+        start = Date.now(); 
+        }
+
+        function endTime() {
+        end = Date.now(); 
+        elapsed = end - start;
+        edisplay = formatTime(elapsed);
+        console.log("Elapsed time: " + edisplay);
+        }
+
+        function formatTime(ms) {
+        var hours = Math.floor(ms / (1000 * 60 * 60));
+        var minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((ms % (1000 * 60)) / 1000);
+        var milliseconds = ms % 1000;
+        hours = hours < 10 ? "0" + hours : hours;
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+        milliseconds = milliseconds < 10 ? "00" + milliseconds : milliseconds < 100 ? "0" + milliseconds : milliseconds;
+        return hours + ":" + minutes + ":" + seconds + ":" + milliseconds;
+        }
+    </script>
+</body>
+</html>
